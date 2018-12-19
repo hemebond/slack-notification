@@ -155,6 +155,10 @@ def main():
 			}
 		]
 
+	# Channel can be overridden when using the old incoming-webhooks
+	if args.channel:
+		message['channel'] = args.channel
+
 	# TODO: use the old token stuff if provided
 	if send_message(args.url, message):
 		sys.exit(0)
