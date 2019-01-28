@@ -99,7 +99,7 @@ def main():
 	if args.service:
 		fields.append({
 			'title': 'Service',
-			'value': '<{0}/monitoring/host/show?host={1}&service={2}|{2}>'.format(args.web, args.host, args.service) if args.web is not None else args.service,
+			'value': '<{0}/monitoring/service/show?host={1}&service={2}|{2}>'.format(args.web, args.host, args.service) if args.web is not None else args.service,
 			'short': True,
 		})
 	fields.append({
