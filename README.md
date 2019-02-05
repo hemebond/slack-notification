@@ -4,40 +4,49 @@
 
 ## Icinga2
 
-Here is an example of Icinga2 NotificationCommand objects:
+Here is an example of Icinga2 configuration objects:
 
-    object NotificationCommand "slack-host-notification"  {
+    template NotificationCommand "slack-notification-command"  {
             import "plugin-notification-command"
-            command = [ SysconfDir + "/icinga2/scripts/slack-notification.py", ]
 
-            arguments = {
-                    "-u" = "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
-                    "-w" = "https://icingaweb2.mycompany.com"
-                    
-                    "-t" = "$notification.type$"
+            command = [ SysconfDir + "/icinga2/scripts/slack-notification.py", ]
+            arguments += {
                     "-a" = "$notification.author$"
                     "-c" = "$notification.comment$"
-                    
+                    "-C" = "$slack_channel$"
+                    "-u" = "$slack_webhook_url$"
+                    "-t" = "$notification.type$"
+                    "-w" = "https://icinga.domain.com"
+            }
+            vars.slack_webhook_url = "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
+    }
+    object NotificationCommand "slack-notification-command-host"  {
+            import "slack-notification-command"
+
+            arguments += {
+                    "-m" = "$host.output$"
                     "-H" = "$host.name$"
                     "-s" = "$host.state$"
-                    "-m" = "$host.output$"
             }
     }
-    object NotificationCommand "slack-service-notification"  {
-            import "plugin-notification-command"
+    object NotificationCommand "slack-notification-command-service"  {
+            import "slack-notification-command"
 
-            command = [ SysconfDir + "/icinga2/scripts/slack-notification.py", ]
-            arguments = {
-                    "-u" = "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
-                    "-w" = "https://icingaweb2.mycompany.com"
-                    
-                    "-t" = "$notification.type$"
-                    "-a" = "$notification.author$"
-                    "-c" = "$notification.comment$"
-                    
-                    "-S" = "$service.name$"
-                    "-s" = "$service.state$"
+            arguments += {
                     "-m" = "$service.output$"
+                    "-s" = "$service.state$"
                     "-H" = "$host.display_name$"
+                    "-S" = "$service.name$"
             }
+    }
+
+    object User "slack"  {
+        // Override the default notification webhook
+        vars.slack_webhook_url = "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
+    }
+
+    object Notification "website-notifications" {
+            command = "slack-notification-command-host"
+            host_name = "localhost"
+            users = [ "slack", ]
     }
